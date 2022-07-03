@@ -34,12 +34,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> informations = [];
 
-  _ajoutInformation() {
-    setState(() {
-      informations.insert(0, _card());
-    });
-  }
-
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -51,44 +45,56 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed:
-              _ajoutInformation(), // devrait ouvrir une popin pour saisir texte
           tooltip: 'Ajouter information',
-          child: const Icon(Icons.add),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("Saisir la nouvelle information"),
+                    content: TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                          hintText: "Entrer la nouvelle information"),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Annuler"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Soumettre"),
+                      )
+                    ],
+                  );
+                });
+          },
+          child: Icon(Icons.add),
         ),
       );
 
-  Widget _card() {
-    final now = DateTime.now();
-    return Card(
-      child: Column(
-        children: [
-          Text(
-            'Le créneau du dimanche 02 juillet 2022 n\'est pas ouvert.',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-          Text(
-            DateFormat.yMMMMEEEEd('fr_FR').format(now),
-          ),
-        ],
-      ),
-    );
+  ajoutInformation() {
+    setState(() {
+      informations.insert(0, _card());
+    });
   }
 
-  ouvreDialogue() => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: const Text("Saisir la nouvelle information :"),
-            content: const TextField(
-              autofocus: true,
-              decoration:
-                  InputDecoration(hintText: "Entrer la nouvelle information"),
+  Widget _card() => Card(
+        child: Column(
+          children: [
+            Text(
+              'Le créneau du dimanche 02 juillet 2022 n\'est pas ouvert.',
+              style: Theme.of(context).textTheme.headline6,
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Soumettre"),
-              )
-            ],
-          ));
+            Text(
+              DateFormat.yMMMMEEEEd('fr_FR').format(DateTime.now()),
+            ),
+          ],
+        ),
+      );
 }
