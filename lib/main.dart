@@ -33,6 +33,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> informations = [];
+  final informationController = TextEditingController();
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -51,9 +52,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: Text("Saisir la nouvelle information"),
-                    content: TextField(
+                    title: const Text("Saisir la nouvelle information"),
+                    content: TextFormField(
                       autofocus: true,
+                      controller: informationController,
                       decoration: InputDecoration(
                           hintText: "Entrer la nouvelle information"),
                     ),
@@ -66,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       TextButton(
                         onPressed: () {
+                          ajoutInformation(informationController.text);
+                          informationController.clear();
                           Navigator.pop(context);
                         },
                         child: const Text("Soumettre"),
@@ -78,17 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
 
-  ajoutInformation() {
-    setState(() {
-      informations.insert(0, _card());
-    });
+  @override
+  void dispose() {
+    informationController.dispose();
+    super.dispose();
   }
 
-  Widget _card() => Card(
+  ajoutInformation(String information) {
+    setState(() {
+      informations.add(Card(
         child: Column(
           children: [
             Text(
-              'Le créneau du dimanche 02 juillet 2022 n\'est pas ouvert.',
+              information,
               style: Theme.of(context).textTheme.headline6,
             ),
             Text(
@@ -96,5 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-      );
+      ));
+    });
+  }
 }
