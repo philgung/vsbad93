@@ -39,10 +39,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
+          actions: [
+            IconButton(
+                onPressed: () => {},
+                iconSize: 75.0,
+                icon: Image.asset('assets/logo_vsbad93.png'))
+          ],
         ),
         body: Center(
           child: ListView(
             children: informations,
+            reverse: true,
+            shrinkWrap: true,
           ),
         ),
         floatingActionButton: FloatingActionButton(
