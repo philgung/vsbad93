@@ -4,6 +4,9 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'AfficheMessage.dart';
+import 'AjoutMessage.dart';
+
 Future<void> main() async {
   initializeDateFormatting('fr_FR', null);
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,9 +40,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> informations = [];
-  final informationController = TextEditingController();
-  Stream<QuerySnapshot> messagesStream =
-      FirebaseFirestore.instance.collection('Messages').snapshots();
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -52,98 +52,50 @@ class _MyHomePageState extends State<MyHomePage> {
                 icon: Image.asset('assets/logo_vsbad93.png'))
           ],
         ),
-        body: Center(
-            child: StreamBuilder<QuerySnapshot>(
-                stream: messagesStream,
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (snapshot.hasError) {
-                    return Text('Une erreur est survenue.');
-                  }
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Text("En cours de chargement ...");
-                  }
-
-                  return ListView(
-                    children:
-                        snapshot.data!.docs.map((DocumentSnapshot document) {
-                      Map<String, dynamic> message =
-                          document.data()! as Map<String, dynamic>;
-                      return ListTile(
-                          title: Text(message['contenu']),
-                          subtitle: Text(DateFormat.yMMMMEEEEd('fr_FR').format(
-                              (DateTime.fromMicrosecondsSinceEpoch(
-                                  (message['date'] as Timestamp)
-                                      .microsecondsSinceEpoch)))));
-                    }).toList(),
-                  );
-                })
-
-            // ListView(
-            //   children: informations,
-            //   reverse: true,
-            //   shrinkWrap: true,
-            // ),
-            ),
+        body: Center(child: Messages()),
         floatingActionButton: FloatingActionButton(
           tooltip: 'Ajouter information',
           onPressed: () {
             showDialog(
                 context: context,
                 builder: (context) {
-                  return AlertDialog(
-                    title: const Text("Saisir la nouvelle information"),
-                    content: TextFormField(
-                      autofocus: true,
-                      controller: informationController,
-                      decoration: InputDecoration(
-                          hintText: "Entrer la nouvelle information"),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Annuler"),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          ajoutInformation(informationController.text);
-                          informationController.clear();
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Soumettre"),
-                      )
-                    ],
-                  );
+                  return AjoutMessage();
                 });
           },
           child: Icon(Icons.add),
         ),
       );
+}
 
+class Messages extends StatelessWidget {
+  Messages({
+    Key? key,
+  }) : super(key: key);
+
+  final Stream<QuerySnapshot> messagesStream =
+      FirebaseFirestore.instance.collection('Messages').snapshots();
   @override
-  void dispose() {
-    informationController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+        stream: messagesStream,
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text('Une erreur est survenue.');
+          }
 
-  ajoutInformation(String information) {
-    setState(() {
-      informations.add(Card(
-        child: Column(
-          children: [
-            Text(
-              information,
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            Text(
-              DateFormat.yMMMMEEEEd('fr_FR').format(DateTime.now()),
-            ),
-          ],
-        ),
-      ));
-    });
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text("En cours de chargement ...");
+          }
+
+          return ListView(
+            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+              Map<String, dynamic> message =
+                  document.data()! as Map<String, dynamic>;
+              return AfficheMessage(message: message);
+            }).toList(),
+            reverse: true,
+            shrinkWrap: true,
+          );
+        });
   }
 }
