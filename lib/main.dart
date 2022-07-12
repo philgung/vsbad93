@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> main() async {
   initializeDateFormatting('fr_FR', null);
@@ -37,6 +38,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> informations = [];
   final informationController = TextEditingController();
+  Stream<QuerySnapshot> messagesStream =
+      FirebaseFirestore.instance.collection('Messages').snapshots();
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -50,12 +53,39 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         body: Center(
-          child: ListView(
-            children: informations,
-            reverse: true,
-            shrinkWrap: true,
-          ),
-        ),
+            child: StreamBuilder<QuerySnapshot>(
+                stream: messagesStream,
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Une erreur est survenue.');
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Text("En cours de chargement ...");
+                  }
+
+                  return ListView(
+                    children:
+                        snapshot.data!.docs.map((DocumentSnapshot document) {
+                      Map<String, dynamic> message =
+                          document.data()! as Map<String, dynamic>;
+                      return ListTile(
+                          title: Text(message['contenu']),
+                          subtitle: Text(DateFormat.yMMMMEEEEd('fr_FR').format(
+                              (DateTime.fromMicrosecondsSinceEpoch(
+                                  (message['date'] as Timestamp)
+                                      .microsecondsSinceEpoch)))));
+                    }).toList(),
+                  );
+                })
+
+            // ListView(
+            //   children: informations,
+            //   reverse: true,
+            //   shrinkWrap: true,
+            // ),
+            ),
         floatingActionButton: FloatingActionButton(
           tooltip: 'Ajouter information',
           onPressed: () {
