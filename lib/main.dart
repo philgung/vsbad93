@@ -4,8 +4,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'AfficheMessage.dart';
-import 'AjoutMessage.dart';
+import 'Messages/AfficheMessage.dart';
+import 'Messages/AjoutMessage.dart';
 
 Future<void> main() async {
   initializeDateFormatting('fr_FR', null);
